@@ -1,0 +1,47 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Enable inline plotting (useful in Jupyter/Colab)
+# %matplotlib inline  
+
+# Step 1: Create or load a sample dataset
+# For demonstration, let's simulate a generative AI-related dataset
+np.random.seed(42)
+data = {
+    'feature1': np.random.normal(100, 10, 100),
+    'feature2': np.random.uniform(50, 150, 100),
+    'feature3': np.random.normal(200, 25, 100),
+    'output_score': np.random.normal(75, 15, 100)
+}
+
+df = pd.DataFrame(data)
+
+print("🔹 Sample of Dataset:")
+print(df.head())
+
+# Step 2: Plot histograms to view distributions
+plt.figure(figsize=(10, 6))
+plt.title("Feature Distributions")
+df.hist(bins=15, figsize=(10, 6), color='skyblue', edgecolor='black')
+plt.tight_layout()
+plt.show()
+
+# Step 3: Scatter plots to analyze relationships
+plt.figure(figsize=(6, 4))
+sns.scatterplot(x='feature1', y='output_score', data=df, color='purple')
+plt.title("Feature1 vs Output Score")
+plt.show()
+
+plt.figure(figsize=(6, 4))
+sns.scatterplot(x='feature2', y='output_score', data=df, color='teal')
+plt.title("Feature2 vs Output Score")
+plt.show()
+
+# Step 4: Correlation heatmap to analyze feature relationships
+plt.figure(figsize=(6, 4))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm', linewidths=0.5)
+plt.title("Correlation Heatmap")
+plt.show()

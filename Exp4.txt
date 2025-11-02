@@ -1,0 +1,49 @@
+import numpy as np
+import faiss
+from gensim.models import Word2Vec
+
+# Step 1: Create a small text corpus
+corpus = [
+    "Artificial intelligence is transforming the world",
+    "Machine learning is a part of artificial intelligence",
+    "Deep learning enables machines to learn complex patterns",
+    "Generative AI can create realistic images and text",
+    "Natural language processing helps computers understand human language"
+]
+
+# Step 2: Preprocess text (tokenization)
+tokenized_corpus = [sentence.lower().split() for sentence in corpus]
+
+# Step 3: Train Word2Vec model on the corpus
+model = Word2Vec(sentences=tokenized_corpus, vector_size=50, window=3, min_count=1, workers=4)
+
+# Step 4: Extract word vectors
+words = list(model.wv.index_to_key)
+vectors = np.array([model.wv[word] for word in words])
+
+print("🔹 Vocabulary:", words[:10])
+print("🔹 Embedding dimension:", vectors.shape)
+
+# Step 5: Build FAISS index for similarity search
+dimension = vectors.shape[1]  # Embedding dimension (50)
+index = faiss.IndexFlatL2(dimension)  # L2 distance-based index
+index.add(vectors)  # Add all word vectors to FAISS
+
+print(f"FAISS index contains {index.ntotal} vectors.")
+
+# Step 6: Perform semantic similarity search
+query_word = "intelligence"
+query_vector = np.array([model.wv[query_word]])
+
+# Search top 5 most similar words
+k = 5
+distances, indices = index.search(query_vector, k)
+
+print(f"\n🔍 Words similar to '{query_word}':\n")
+for i, idx in enumerate(indices[0]):
+    print(f"{i+1}. {words[idx]}  (distance: {distances[0][i]:.4f})")
+
+# Step 7: Compare semantic relationships manually
+word_a, word_b = "machine", "learning"
+similarity = model.wv.similarity(word_a, word_b)
+print(f"\nSemantic similarity between '{word_a}' and '{word_b}': {similarity:.4f}")

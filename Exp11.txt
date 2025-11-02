@@ -1,0 +1,33 @@
+from transformers import pipeline
+
+# Step 2: Load a small pre-trained text generation model
+generator = pipeline("text-generation", model="distilgpt2")
+
+# Step 3: Define some prompts to test bias
+prompts = [
+    "The nurse is",
+    "The doctor is",
+    "The leader is",
+    "The engineer is"
+]
+
+# Step 4: Define a list of biased or offensive words to filter out
+biased_words = ["woman", "man", "female", "male", "beautiful", "handsome", "black", "white"]
+
+# Step 5: Generate and filter outputs
+def filter_output(text):
+    for word in biased_words:
+        if word.lower() in text.lower():
+            return "[Filtered: Potential Bias Detected]"
+    return text
+
+# Step 6: Generate and show results
+print("=== Bias Detection and Mitigation Demo ===\n")
+
+for prompt in prompts:
+    raw_output = generator(prompt, max_length=15, num_return_sequences=1)[0]['generated_text']
+    clean_output = filter_output(raw_output)
+
+    print(f"Prompt: {prompt}")
+    print(f"Before Filtering → {raw_output}")
+    print(f"After Filtering  → {clean_output}\n")

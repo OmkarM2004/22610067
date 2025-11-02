@@ -1,0 +1,57 @@
+import random
+
+# Create a small 3x3 grid environment
+env = [
+    ["food", "empty", "hazard"],
+    ["tool", "food", "empty"],
+    ["empty", "hazard", "food"]
+]
+
+# Define a very simple Agent
+class Agent:
+    def __init__(self, name):
+        self.name = name
+        self.health = 100
+        self.x = random.randint(0, 2)
+        self.y = random.randint(0, 2)
+        self.score = 0
+
+    def move(self):
+        # Move randomly in grid
+        self.x = random.randint(0, 2)
+        self.y = random.randint(0, 2)
+
+    def act(self):
+        cell = env[self.x][self.y]
+        print(f"{self.name} is at ({self.x},{self.y}) and found {cell}")
+
+        if cell == "food":
+            self.score += 10
+            print(f"{self.name} eats food 🍎 → Score: {self.score}")
+            env[self.x][self.y] = "empty"
+        elif cell == "hazard":
+            self.health -= 20
+            print(f"{self.name} hits hazard ⚠️ → Health: {self.health}")
+        elif cell == "tool":
+            self.score += 5
+            print(f"{self.name} collects tool 🔧 → Score: {self.score}")
+            env[self.x][self.y] = "empty"
+        else:
+            print(f"{self.name} found nothing.")
+
+# Create two agents
+a1 = Agent("Agent A")
+a2 = Agent("Agent B")
+
+# Run a few steps
+for step in range(5):
+    print(f"\n--- Step {step+1} ---")
+    a1.move()
+    a1.act()
+    a2.move()
+    a2.act()
+
+# Show results
+print("\nFinal Results:")
+print(f"{a1.name} → Score: {a1.score}, Health: {a1.health}")
+print(f"{a2.name} → Score: {a2.score}, Health: {a2.health}")

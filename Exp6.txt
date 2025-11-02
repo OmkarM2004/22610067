@@ -1,0 +1,21 @@
+from diffusers import StableDiffusionPipeline
+import torch
+import matplotlib.pyplot as plt
+
+# Step 3: Load the pre-trained Stable Diffusion model
+# (public model — no authentication needed)
+model_id = "runwayml/stable-diffusion-v1-5"
+
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipe = pipe.to("cuda" if torch.cuda.is_available() else "cpu")
+
+# Step 4: Give a text prompt
+prompt = "a beautiful sunset over mountains in watercolor style"
+
+# Step 5: Generate the image
+image = pipe(prompt).images[0]
+
+# Step 6: Display the generated image
+plt.imshow(image)
+plt.axis("off")
+plt.show()

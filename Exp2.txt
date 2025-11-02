@@ -1,0 +1,70 @@
+import pandas as pd
+import numpy as np
+
+# ------------------------------------------------------------
+# 1️⃣ Create or Load a Sample Dataset
+# ------------------------------------------------------------
+data = {
+    'Name': ['Aisha', 'Ravi', 'John', 'Sara', np.nan],
+    'Age': [25, np.nan, 30, 28, 22],
+    'Gender': ['Female', 'Male', 'Male', np.nan, 'Female'],
+    'Income': [50000, 60000, np.nan, 58000, 52000],
+    'City': ['Pune', 'Mumbai', 'Delhi', 'Pune', 'Chennai']
+}
+
+df = pd.DataFrame(data)
+print("🔹 Original Dataset:\n", df)
+
+# ------------------------------------------------------------
+# 2️⃣ Handling Missing Values
+# ------------------------------------------------------------
+print("\n🔹 Checking for Missing Values:\n", df.isnull().sum())
+
+# Fill missing 'Age' with mean
+df['Age'].fillna(df['Age'].mean(), inplace=True)
+
+# Fill missing 'Gender' with mode (most frequent value)
+df['Gender'].fillna(df['Gender'].mode()[0], inplace=True)
+
+# Fill missing 'Income' with median
+df['Income'].fillna(df['Income'].median(), inplace=True)
+
+# Drop rows where 'Name' is missing (since it's an identifier)
+df.dropna(subset=['Name'], inplace=True)
+
+print("\n✅ After Handling Missing Values:\n", df)
+
+# ------------------------------------------------------------
+# 3️⃣ Encoding Categorical Variables
+# ------------------------------------------------------------
+# Label Encoding using Pandas replace/map
+df['Gender'] = df['Gender'].map({'Male': 0, 'Female': 1})
+
+# One-Hot Encoding for 'City' using pd.get_dummies
+df = pd.get_dummies(df, columns=['City'], prefix='City')
+
+print("\n✅ After Encoding Categorical Variables:\n", df)
+
+# ------------------------------------------------------------
+# 4️⃣ Normalizing Numerical Columns
+# ------------------------------------------------------------
+# Min-Max Normalization on 'Age' and 'Income'
+df['Age'] = (df['Age'] - df['Age'].min()) / (df['Age'].max() - df['Age'].min())
+df['Income'] = (df['Income'] - df['Income'].min()) / (df['Income'].max() - df['Income'].min())
+
+print("\n✅ After Normalizing Numerical Features:\n", df)
+
+# ------------------------------------------------------------
+# 5️⃣ Converting to NumPy Array (for ML/GenAI models)
+# ------------------------------------------------------------
+array_data = df.to_numpy()
+print("\n🔹 Final Preprocessed Data (NumPy Array):\n", array_data)
+
+# ------------------------------------------------------------
+# 6️⃣ Summary of Preprocessing Steps
+# ------------------------------------------------------------
+print("\n📋 Summary of Preprocessing Steps:")
+print("1. Handled missing values (mean/median/mode)")
+print("2. Encoded categorical variables (label + one-hot)")
+print("3. Normalized numerical columns")
+print("4. Converted final data to NumPy array for AI models")

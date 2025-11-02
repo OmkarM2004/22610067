@@ -1,0 +1,89 @@
+import tensorflow as tf
+
+# 1️⃣ Check TensorFlow version and eager execution
+print("TensorFlow Version:", tf.__version__)
+print("Eager Execution Enabled:", tf.executing_eagerly())
+
+# -------------------------------------------------------------
+# 2️⃣ Tensor Creation
+# -------------------------------------------------------------
+# Scalars (0-D Tensor)
+scalar = tf.constant(10)
+print("\nScalar Tensor:", scalar)
+
+# Vector (1-D Tensor)
+vector = tf.constant([1, 2, 3, 4])
+print("\nVector Tensor:", vector)
+
+# Matrix (2-D Tensor)
+matrix = tf.constant([[1, 2], [3, 4]])
+print("\nMatrix Tensor:\n", matrix)
+
+# Tensor of higher dimensions (3-D Tensor)
+tensor3D = tf.constant([
+    [[1, 2], [3, 4]],
+    [[5, 6], [7, 8]]
+])
+print("\n3-D Tensor:\n", tensor3D)
+
+# -------------------------------------------------------------
+# 3️⃣ Tensor Attributes
+# -------------------------------------------------------------
+print("\nTensor Shape:", matrix.shape)
+print("Tensor Data Type:", matrix.dtype)
+print("Tensor Rank (No. of dimensions):", tf.rank(matrix))
+
+# -------------------------------------------------------------
+# 4️⃣ Tensor Operations / Manipulation
+# -------------------------------------------------------------
+# Element-wise operations
+a = tf.constant([[1, 2], [3, 4]])
+b = tf.constant([[5, 6], [7, 8]])
+
+print("\nAddition:\n", tf.add(a, b))
+print("Subtraction:\n", tf.subtract(a, b))
+print("Multiplication:\n", tf.multiply(a, b))
+print("Matrix Multiplication:\n", tf.matmul(a, b))
+
+# -------------------------------------------------------------
+# 5️⃣ Reshaping and Transposing
+# -------------------------------------------------------------
+tensor = tf.constant([[1, 2, 3], [4, 5, 6]])
+print("\nOriginal Tensor:\n", tensor)
+reshaped = tf.reshape(tensor, [3, 2])
+print("Reshaped Tensor (3x2):\n", reshaped)
+transposed = tf.transpose(tensor)
+print("Transposed Tensor:\n", transposed)
+
+# -------------------------------------------------------------
+# 6️⃣ Using Variables (mutable tensors)
+# -------------------------------------------------------------
+v = tf.Variable([[1, 2], [3, 4]], dtype=tf.float32)
+print("\nOriginal Variable:\n", v)
+v.assign_add([[1, 1], [1, 1]])
+print("After assign_add():\n", v)
+
+# -------------------------------------------------------------
+# 7️⃣ Demonstrating Eager Execution
+# -------------------------------------------------------------
+# In eager execution mode, operations are computed immediately.
+x = tf.constant(3.0)
+y = tf.constant(2.0)
+z = tf.constant(5.0)
+
+# This computation runs instantly, no session needed.
+result = x * y + z
+print("\nEager Execution Example (x*y+z):", result.numpy())
+
+# -------------------------------------------------------------
+# 8️⃣ Dynamic Computation Example
+# -------------------------------------------------------------
+# A function using TensorFlow operations with control flow
+def dynamic_example(x):
+    if tf.reduce_sum(x) > 10:
+        return x * 2
+    else:
+        return x + 2
+
+data = tf.constant([2, 4, 6])
+print("\nDynamic Computation Output:\n", dynamic_example(data))
