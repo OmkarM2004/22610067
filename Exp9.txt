@@ -1,0 +1,55 @@
+from sentence_transformers import SentenceTransformer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import faiss
+import torch
+
+# Step 1: Prepare Documents
+# ------------------------------
+documents = [
+    "Artificial Intelligence helps machines learn from data.",
+    "Machine Learning is a subset of Artificial Intelligence.",
+    "Deep Learning uses neural networks to process complex data.",
+    "Natural Language Processing allows computers to understand human language.",
+    "FAISS is a library for efficient similarity search and clustering of dense vectors."
+]
+
+# Step 2: Create Embeddings and Store in FAISS
+# ------------------------------
+embedder = SentenceTransformer('all-MiniLM-L6-v2')  # small and fast embedding model
+embeddings = embedder.encode(documents)
+
+dimension = embeddings.shape[1]
+index = faiss.IndexFlatL2(dimension)  # create a simple FAISS index
+index.add(embeddings)  # add document vectors
+
+print("✅ FAISS index ready with", index.ntotal, "documents")
+
+# Step 3: Define Retriever
+# ------------------------------
+def retrieve_relevant_docs(query, k=2):
+    query_vec = embedder.encode([query])
+    distances, indices = index.search(query_vec, k)
+    return [documents[i] for i in indices[0]]
+
+# Step 4: Use Pretrained LLM (DistilGPT2)
+# ------------------------------
+tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
+model = AutoModelForCausalLM.from_pretrained("distilgpt2")
+
+# Step 5: Ask Question and Generate Response
+# ------------------------------
+query = "What is the role of FAISS in AI?"
+retrieved_docs = retrieve_relevant_docs(query)
+
+context = " ".join(retrieved_docs)
+prompt = f"Context: {context}\nQuestion: {query}\nAnswer:"
+
+inputs = tokenizer(prompt, return_tensors="pt")
+outputs = model.generate(**inputs, max_length=80, temperature=0.7)
+
+print("\n🧾 Query:", query)
+print("\n📚 Retrieved Context:")
+for doc in retrieved_docs:
+    print("-", doc)
+print("\n🤖 Model Response:")
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))

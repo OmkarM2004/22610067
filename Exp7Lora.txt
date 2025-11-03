@@ -1,0 +1,85 @@
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, DataCollatorForLanguageModeling
+from datasets import load_dataset
+from peft import get_peft_model, LoraConfig, TaskType
+import evaluate
+import math
+
+# --- Load pre-trained small model ---
+model_name = "distilgpt2"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+# ✅ FIX: GPT-2 has no pad_token by default
+if tokenizer.pad_token is None:
+    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+
+model = AutoModelForCausalLM.from_pretrained(model_name)
+model.resize_token_embeddings(len(tokenizer)) 
+
+# --- Apply LoRA (Low-Rank Adaptation) ---
+peft_config = LoraConfig(
+    task_type=TaskType.CAUSAL_LM,
+    r=8,            # low-rank dimension
+    lora_alpha=16,
+    lora_dropout=0.1,
+)
+model = get_peft_model(model, peft_config)
+
+# --- Load small text dataset (uses wikitext-2) ---
+dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
+train_texts = dataset["train"]["text"][:1000]  
+
+# --- Tokenize the dataset ---
+def tokenize_function(examples):
+    return tokenizer(examples["text"], truncation=True, padding="max_length", max_length=64)
+
+tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["text"])
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+
+# --- Training arguments (small, fast run) ---
+training_args = TrainingArguments(
+    output_dir="./lora_gpt2_results",
+    per_device_train_batch_size=2,
+    num_train_epochs=1,
+    logging_steps=10,
+    save_strategy="no",
+    report_to="none",  # disable WandB logging
+)
+
+# --- Trainer setup ---
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_dataset["train"].select(range(200)),  # very small subset
+    data_collator=data_collator,
+)
+
+# --- Train model ---
+print("🚀 Fine-tuning model with LoRA...")
+trainer.train()
+
+# --- Save fine-tuned model ---
+model.save_pretrained("./lora_gpt2_finetuned")
+
+# --- Generate sample text ---
+prompt = "Artificial intelligence will change the world by"
+inputs = tokenizer(prompt, return_tensors="pt")
+
+outputs = model.generate(
+    **inputs,
+    max_length=50,
+    num_return_sequences=1,
+    temperature=0.7,
+    pad_token_id=tokenizer.pad_token_id  # ✅ important fix for generation
+)
+print("\n🧠 Generated text:\n")
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+
+print("\n📊 Calculating Perplexity manually...")
+eval_text = prompt + " creating smarter systems for humans."
+inputs = tokenizer(eval_text, return_tensors="pt", truncation=True, padding=True)
+with torch.no_grad():
+    outputs = model(**inputs, labels=inputs["input_ids"])
+    loss = outputs.loss
+    perplexity = math.exp(loss.item())
+
+print(f"Perplexity: {perplexity:.2f}")

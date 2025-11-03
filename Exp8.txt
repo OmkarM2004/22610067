@@ -1,0 +1,26 @@
+from transformers import pipeline
+import evaluate
+
+# --- Step 1: Load pre-trained summarization model ---
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+
+# --- Step 2: Input text ---
+text = """
+Artificial Intelligence (AI) is transforming industries by enabling machines to perform tasks
+that normally require human intelligence. From healthcare to finance, AI applications are
+improving efficiency, accuracy, and decision-making. However, concerns about ethics,
+bias, and job displacement continue to grow.
+"""
+
+# --- Step 3: Generate summary ---
+summary = summarizer(text, max_length=60, min_length=20, do_sample=False)[0]["summary_text"]
+print("\n🧾 Original Text:\n", text)
+print("\n✨ Generated Summary:\n", summary)
+
+# --- Step 4: Evaluate summary using ROUGE ---
+rouge = evaluate.load("rouge")
+results = rouge.compute(predictions=[summary], references=[text])
+
+print("\n📊 ROUGE Evaluation Results:")
+for metric, score in results.items():
+    print(f"{metric}: {score:.4f}")
