@@ -1,0 +1,4 @@
+user1,login,08:00
+user1,logout,10:30
+user2,login,09:00
+user2,logout,12:00
